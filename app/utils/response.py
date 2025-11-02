@@ -17,31 +17,23 @@ def make_error_response(app_status=AppStatus.ERROR_INTERNAL_SERVER_ERROR, detail
     )
 
 
-def error_exception_handler(app_status: AppStatus, data: dict| list = None):
+def error_exception_handler(app_status: AppStatus, data: dict | list = None, headers=None):
     return HTTPException(
         status_code=app_status.status_code,
         detail={
             **app_status.meta,
             "data": data or {}
-        }
+        }, headers=headers
     )
 
 
 def handle_response(response: dict | None = None, app_status: AppStatus = AppStatus.SUCCESS):
-    """Standardize API response format.
-
-    Args:
-        response (dict | None): The data to include in the response. Defaults to None.
-        app_status (AppStatus): The status of the response. Defaults to AppStatus.SUCCESS.
-    """
+    """Standardize API response format."""
 
     if isinstance(response, HTTPException):
         raise response
 
-    return JSONResponse(
-        status_code=app_status.status_code,
-        content=jsonable_encoder({
-             **app_status.meta,
-            "data": response
-        })
-    )
+    return {
+        **app_status.meta,
+        "data": response
+    }

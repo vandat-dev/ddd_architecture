@@ -1,10 +1,12 @@
 # DDD Architecture Project
 
-A Domain-Driven Design (DDD) implementation built with FastAPI, demonstrating clean architecture principles and modern Python development practices.
+A Domain-Driven Design (DDD) implementation built with FastAPI, demonstrating clean architecture principles and modern
+Python development practices.
 
 ## 🏗️ Architecture Overview
 
-This project follows **Domain-Driven Design (DDD)** principles with a layered architecture that promotes separation of concerns, maintainability, and scalability.
+This project follows **Domain-Driven Design (DDD)** principles with a layered architecture that promotes separation of
+concerns, maintainability, and scalability.
 
 ### Architecture Layers
 
@@ -32,22 +34,26 @@ This project follows **Domain-Driven Design (DDD)** principles with a layered ar
 ## 🎯 DDD Principles Implemented
 
 ### 1. **Domain-Centric Design**
+
 - **Modules** represent bounded contexts (e.g., `auth` module)
 - **Domain models** encapsulate business logic and rules
 - **Clear boundaries** between different domains
 
 ### 2. **Layered Architecture**
+
 - **Presentation Layer**: Controllers handle HTTP requests/responses
-- **Application Layer**: Services orchestrate business workflows  
+- **Application Layer**: Services orchestrate business workflows
 - **Domain Layer**: Models contain business logic and invariants
 - **Infrastructure Layer**: Repositories handle data persistence
 
 ### 3. **Dependency Inversion**
+
 - **High-level modules** don't depend on low-level modules
 - **Abstractions** define contracts between layers
 - **Dependency injection** via FastAPI's dependency system
 
 ### 4. **Clean Code Practices**
+
 - **Single Responsibility** - each class has one reason to change
 - **Interface Segregation** - focused, cohesive interfaces
 - **Open/Closed Principle** - extensible without modification
@@ -55,6 +61,7 @@ This project follows **Domain-Driven Design (DDD)** principles with a layered ar
 ## 🚀 Features
 
 ### Authentication & Authorization
+
 - 🔐 **JWT-based authentication** with access/refresh tokens
 - 👤 **User management** (CRUD operations)
 - 🛡️ **Role-based access control** (ADMIN, USER, CHECKER, ENTRY)
@@ -62,6 +69,7 @@ This project follows **Domain-Driven Design (DDD)** principles with a layered ar
 - ⚡ **Token refresh** mechanism
 
 ### Technical Features
+
 - 📊 **PostgreSQL** with async SQLAlchemy
 - 🔄 **Database migrations** support
 - 🐳 **Docker containerization**
@@ -82,55 +90,54 @@ This project follows **Domain-Driven Design (DDD)** principles with a layered ar
 ## 📦 Installation & Setup
 
 ### Prerequisites
+
 - Python 3.10+
 - Docker & Docker Compose
 - Poetry (recommended)
 
 ### 1. Clone Repository
+
 ```bash
 git clone <repository-url>
 cd ddd_architecture
 ```
 
 ### 2. Environment Configuration
+
 Create a `.env` file in the project root:
+
 ```env
-# Database Configuration
-POSTGRES_SERVER=localhost
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-POSTGRES_DB=ddd_app
-POSTGRES_PORT=5432
+POSTGRES_SERVER=127.0.0.1
+POSTGRES_PORT=5001
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=
+POSTGRES_DB=healthcare
 
-# JWT Configuration
-JWT_SECRET_KEY=your-super-secret-jwt-key
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRES_IN_MINUTES=60
-REFRESH_TOKEN_EXPIRES_IN_DAYS=7
+KEYCLOAK_URL=
+KEYCLOAK_REALM=
+KEYCLOAK_CLIENT_ID=
+KEYCLOAK_CLIENT_SECRET=
+KEYCLOAK_REDIRECT_URL=
 
-# API Configuration
-API_PREFIX=/api
-VERSION=0.1
-DEBUG=true
-ALLOW_ORIGINS=*
-
-# MinIO Configuration
+ALLOW_ORIGINS=http://localhost:8000
 MINIO_ENDPOINT=localhost:9000
 MINIO_PUBLIC_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET_NAME=ddd-app-bucket
+MINIO_ACCESS_KEY=
+MINIO_SECRET_KEY=
+MINIO_BUCKET_NAME=
 MINIO_SECURE=false
 MINIO_PUBLIC_SECURE=false
 ```
 
 ### 3. Start Infrastructure Services
+
 ```bash
 cd deployment/dev
 docker-compose up -d
 ```
 
 ### 4. Install Dependencies
+
 ```bash
 # Using Poetry (recommended)
 poetry install
@@ -141,6 +148,7 @@ pip install -r requirements.txt
 ```
 
 ### 5. Run Application
+
 ```bash
 # Development
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -152,6 +160,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ## 📡 API Endpoints
 
 ### Authentication
+
 ```http
 POST   /api/auth/register    # Register new user (Admin only)
 POST   /api/auth/login       # User login
@@ -159,7 +168,8 @@ GET    /api/auth/me          # Get current user info
 POST   /api/auth/logout      # User logout
 ```
 
-### User Management  
+### User Management
+
 ```http
 GET    /api/users            # Get all users (Admin only)
 PUT    /api/users/{user_id}  # Update user (Admin only)  
@@ -182,6 +192,7 @@ pytest tests/user/test_auth_repository.py
 ## 📁 Project Structure Details
 
 ### Domain Module Structure (`modules/auth/`)
+
 ```
 auth/
 ├── controller.py     # HTTP request handlers
@@ -195,6 +206,7 @@ auth/
 ```
 
 ### Core Infrastructure (`infra/`)
+
 ```
 infra/
 ├── database.py       # Database configuration & session management
@@ -214,32 +226,36 @@ infra/
 ## 🌐 Database Schema
 
 ### Users Table
+
 ```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(100),
-    fullname VARCHAR(100),
+CREATE TABLE users
+(
+    id           UUID PRIMARY KEY            DEFAULT uuid_generate_v4(),
+    username     VARCHAR(50) UNIQUE NOT NULL,
+    password     VARCHAR(255)       NOT NULL,
+    email        VARCHAR(100),
+    fullname     VARCHAR(100),
     phone_number VARCHAR(20),
-    gender VARCHAR(10),
-    address VARCHAR(128),
-    role VARCHAR(128) NOT NULL DEFAULT 'USER',
-    is_active BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    gender       VARCHAR(10),
+    address      VARCHAR(128),
+    role         VARCHAR(128)       NOT NULL DEFAULT 'USER',
+    is_active    BOOLEAN            NOT NULL DEFAULT false,
+    created_at   TIMESTAMP WITH TIME ZONE    DEFAULT now(),
+    updated_at   TIMESTAMP WITH TIME ZONE    DEFAULT now()
 );
 ```
 
 ## 🚀 Deployment
 
 ### Development
+
 ```bash
 cd deployment/dev
 docker-compose up -d
 ```
 
 ### Production
+
 ```bash
 cd deployment/production  
 docker-compose up -d
@@ -268,7 +284,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🏗️ DDD Benefits Realized
 
 - **Maintainability**: Clear separation of concerns
-- **Testability**: Isolated layers with dependency injection  
+- **Testability**: Isolated layers with dependency injection
 - **Scalability**: Modular architecture supports team growth
 - **Flexibility**: Easy to add new domains/features
 - **Business Alignment**: Code structure mirrors business domains

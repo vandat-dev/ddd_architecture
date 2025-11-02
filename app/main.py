@@ -13,7 +13,7 @@ from app.initialize.database import lifespan
 from app.initialize.websocket import socket_manage
 from app.modules.user.controller import auth_router, user_router
 from app.modules.user.dependencies import get_token_service
-from app.modules.user.security import TokenService
+from app.modules.auth.security import TokenService
 from app.utils.response import make_error_response
 
 
@@ -24,7 +24,6 @@ class Application:
         self.setup_router()
         self.init_cors()
         self.configure_logging()
-        self.add_exception_handlers()
         # self.setup_websocket_router()
 
     def setup_router(self):
@@ -69,25 +68,6 @@ class Application:
             format="%(asctime)s | %(levelname)s : %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S"
         )
-
-    def add_exception_handlers(self):
-        @self.app.exception_handler(RequestValidationError)
-        async def validation_exception_handler(request: Request, validation_error: RequestValidationError):
-            detail = validation_error.errors()[0]
-            err_loc = detail.get('loc')
-            err_field = err_loc[len(err_loc) - 1]
-            err_msg = f"{detail.get('msg')}: {err_field}"
-            return make_error_response(app_status=AppStatus.BAD_REQUEST, detail={
-                "error_code": AppStatus.BAD_REQUEST.error_code,
-                "message": err_msg
-            })
-
-        @self.app.exception_handler(Exception)
-        async def general_exception_handler(request: Request, exc: Exception):
-            return make_error_response(app_status=AppStatus.BAD_REQUEST, detail={
-                "error_code": AppStatus.BAD_REQUEST.error_code,
-                "message": exc.__str__()
-            })
 
     def start_app(self, host="0.0.0.0", port=8000):
         """Start the Uvicorn server."""

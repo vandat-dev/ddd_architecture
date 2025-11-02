@@ -10,29 +10,35 @@ logger = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, user_repository, token_service):
+    def __init__(self, user_repository, token_service, keycloak_admin_service):
         self.user_repository = user_repository
         self.token_service = token_service
+        self.keycloak_admin_service = keycloak_admin_service
 
-    async def login(self, email, password):
-        user = await self.user_repository.find_user_by_email(email)
-
-        if not user or not verify_password(password, user.password):
-            logger.info("AuthService.login - Invalid login attempt for username: %s", email)
-            raise error_exception_handler(app_status=AppStatus.ERROR_LOGIN_INVALID)
-        if user.is_active is False:
-            raise error_exception_handler(app_status=AppStatus.ERROR_USER_INACTIVE)
-        return self.token_service.generate_token_pair(user)
+    async def exchange_code_for_token(self, code: str):
+        result = await self.token_service.exchange_code_for_token(code)
+        return result
 
     async def register(self, param: RegisterSchema):
+        # Check if user already exists in local database
         if await self.user_repository.find_user_by_email(param.email):
             raise error_exception_handler(app_status=AppStatus.ERROR_USER_ALREADY_EXISTS)
 
-        user_data = param.model_dump(exclude_unset=True, exclude_none=True)
-        user_data["password"] = hash_password(param.password)
+        if await self.user_repository.find_user_by_username(param.username):
+            raise error_exception_handler(app_status=AppStatus.ERROR_USER_ALREADY_EXISTS)
 
-        user = await self.user_repository.create_user(user_data)
-        return user
+        # Create user in Keycloak first and get the sub
+        user_data_for_keycloak = param.model_dump(exclude_unset=True, exclude_none=True)
+
+        keycloak_sub = await self.keycloak_admin_service.create_user(user_data_for_keycloak)
+
+        # Create user in local database
+        user_data_for_keycloak["id"] = keycloak_sub
+        del user_data_for_keycloak["password"]
+        user = await self.user_repository.create_user(user_data_for_keycloak)
+
+        logger.info(f"Successfully registered user: {user.username} with Keycloak sub: {keycloak_sub}")
+        return handle_response(app_status=AppStatus.SUCCESS, response=user.to_dict())
 
     async def get_all_users(self, skip: int, limit: int):
         logger.info("AuthService.login - Get all users")

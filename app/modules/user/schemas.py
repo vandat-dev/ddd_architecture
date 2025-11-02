@@ -12,10 +12,9 @@ class LoginSchema(BaseModel):
 
 class RegisterSchema(BaseModel):
     email: str
-    fullname: str
     username: str
     password: str
-    phone_number: str
+    phone_number: str = None
     role: Optional[UserRole] = None
 
 

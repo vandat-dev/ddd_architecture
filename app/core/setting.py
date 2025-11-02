@@ -17,10 +17,17 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str
     PAGE_DEFAULT: Optional[int] = 1
     LIMIT_DEFAULT: Optional[int] = 10
-    ACCESS_TOKEN_EXPIRES_IN_MINUTES: int = 1
-    REFRESH_TOKEN_EXPIRES_IN_DAYS: int = 7
-    JWT_ALGORITHM: str = "HS256"
-    JWT_SECRET_KEY: str
+
+    ACCESS_TOKEN_EXPIRES_IN_MINUTES: int = 30 * 60
+    REFRESH_TOKEN_EXPIRES_IN_MINUTES: int = 10 * 24 * 60
+    JWT_ALGORITHM: str
+
+    KEYCLOAK_URL: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_CLIENT_ID: str
+    KEYCLOAK_CLIENT_SECRET: str
+    KEYCLOAK_REDIRECT_URL: str
+
     UPLOAD_PATH: str = "uploads"
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_PUBLIC_ENDPOINT: str
