@@ -1,12 +1,10 @@
-from sqlalchemy import Column, String, Boolean, DateTime, UUID, text
+from sqlalchemy import Column, String, Boolean, DateTime, UUID, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
 import uuid
 
 Base = declarative_base()
 
-
-class User(Base):
+class UserModel(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -21,19 +19,3 @@ class User(Base):
     is_active = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    def to_dict(self):
-        """Convert to dict for JSON response"""
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "fullname": self.fullname,
-            "phone_number": self.phone_number,
-            "gender": self.gender,
-            "address": self.address,
-            "role": self.role,
-            "is_active": self.is_active,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }

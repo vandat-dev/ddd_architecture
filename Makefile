@@ -1,8 +1,8 @@
-.PHONY: run create-admin
+.PHONY: proto
 
 # Run app
 run:
-	uvicorn app.main:app --reload
+	uvicorn app.main:app --port 8007 --reload
 
 create-admin:
 	@read -p "👤 Username: " username; \

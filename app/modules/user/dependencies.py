@@ -2,13 +2,13 @@ from fastapi import Depends
 
 from app.core.setting import settings
 from app.initialize.database import get_session
-from app.modules.user.repository import AuthRepository
+from app.modules.user.infrastructure.persistence.repository import SQLAlchemyUserRepository
 from app.modules.auth.security import TokenService
-from app.modules.user.service import AuthService
+from app.modules.user.application.services import AuthService
 
 
 def get_auth_repository(db=Depends(get_session)):
-    return AuthRepository(db)
+    return SQLAlchemyUserRepository(db)
 
 
 def get_token_service():
@@ -16,6 +16,8 @@ def get_token_service():
                         settings.REFRESH_TOKEN_EXPIRES_IN_DAYS)
 
 
-def get_auth_service(auth_repository: AuthRepository = Depends(get_auth_repository),
-                     token_service: TokenService = Depends(get_token_service)):
-    return AuthService(auth_repository, token_service)
+def get_auth_service(
+    user_repository=Depends(get_auth_repository),
+    token_service=Depends(get_token_service)
+) -> AuthService:
+    return AuthService(user_repository, token_service)

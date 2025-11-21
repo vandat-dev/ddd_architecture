@@ -8,7 +8,7 @@ from fastapi import Response, Request
 
 from app.core.app_status import AppStatus
 from app.core.setting import settings
-from app.modules.user.model import User
+from app.modules.user.domain.entities import User
 from app.utils.response import error_exception_handler
 
 

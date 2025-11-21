@@ -8,9 +8,9 @@ from app.core.app_status import AppStatus
 from app.core.setting import settings
 from app.modules.user.dependencies import get_auth_service
 from app.middlewares.auth_middleware import AuthMiddleware
-from app.modules.user.schemas import LoginSchema, RegisterSchema, UserUpdateSchema, UserFilterSchema
+from app.modules.user.application.dtos import LoginSchema, RegisterSchema, UserUpdateSchema, UserFilterSchema
 from app.modules.auth.security import CookieService
-from app.modules.user.service import AuthService
+from app.modules.user.application.services import AuthService
 from app.utils.response import handle_response
 
 logger = logging.getLogger(__name__)

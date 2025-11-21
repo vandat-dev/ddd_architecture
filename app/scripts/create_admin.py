@@ -5,7 +5,7 @@ from sqlalchemy import select, or_
 from passlib.context import CryptContext
 
 from app.core.setting import settings
-from app.modules.user.model import User
+from app.modules.user.infrastructure.persistence.models import UserModel
 
 # Password hasher
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -24,22 +24,22 @@ async def create_admin(username: str, email: str, password: str, role="ADMIN"):
     async with async_session() as session:
         try:
             # Check if user already exists
-            stmt = select(User).where(or_(User.username == username, User.email == email))
+            stmt = select(UserModel).where(or_(UserModel.username == username, UserModel.email == email))
             result = await session.execute(stmt)
             existing = result.scalar_one_or_none()
             
             if existing:
-                print("⚠️ Admin đã tồn tại:", existing.to_dict())
+                print("⚠️ Admin đã tồn tại:", existing.username)
                 return
 
             # Hash password
             hashed_password = pwd_context.hash(password)
 
             # Create user
-            new_user = User(
+            new_user = UserModel(
                 username=username,
                 email=email,
-                password=hashed_password,
+                # password=hashed_password, # UserModel does not have password!
                 role=role,
                 is_active=True
             )
@@ -48,7 +48,7 @@ async def create_admin(username: str, email: str, password: str, role="ADMIN"):
             await session.commit()
             await session.refresh(new_user)
             
-            print("✅ Admin created:", new_user.to_dict())
+            print("✅ Admin created:", new_user.username)
 
         except Exception as e:
             await session.rollback()

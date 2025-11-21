@@ -7,9 +7,9 @@ from fastapi.params import Depends
 from app.constant.enums import UserRole
 from app.core.app_status import AppStatus
 from app.core.setting import settings
-from app.modules.user.model import User
+from app.modules.user.domain.entities import User
 from app.modules.user.dependencies import get_token_service, get_auth_repository
-from app.modules.user.repository import AuthRepository
+from app.modules.user.infrastructure.persistence.repository import SQLAlchemyUserRepository
 from app.modules.auth.security import TokenService, CookieService
 from app.utils.response import error_exception_handler
 
@@ -21,14 +21,14 @@ class AuthMiddleware:
     @classmethod
     async def get_current_user(cls, request: Request, response: Response,
                                token_service: TokenService = Depends(get_token_service),
-                               auth_repo: AuthRepository = Depends(get_auth_repository)):
+                               auth_repo: SQLAlchemyUserRepository = Depends(get_auth_repository)):
         try:
             token = CookieService.get_token_from_cookie("access_token", request)
             claims = token_service.validate_token(token)
             if not claims:
                 user = await cls.handle_refresh_token_valid(request, response, token_service, auth_repo)
                 return user
-            user = await auth_repo.find_user_by_id(UUID(claims.get("sub")))
+            user = await auth_repo.find_by_id(UUID(claims.get("sub")))
             return user
 
         except Exception:
@@ -45,7 +45,7 @@ class AuthMiddleware:
         if not claims:
             raise error_exception_handler(AppStatus.UNAUTHORIZED, headers=response.headers)
 
-        user = await auth_repo.find_user_by_id(UUID(claims.get("sub")))
+        user = await auth_repo.find_by_id(UUID(claims.get("sub")))
         tokens = token_service.generate_token_pair(user)
 
         origin = CookieService.get_origin_from_request(request)
@@ -81,8 +81,8 @@ class AuthMiddleware:
 
     @classmethod
     def is_fake(cls):
-        async def dependency(auth_repo: AuthRepository = Depends(get_auth_repository)):
-            user = await auth_repo.find_user_by_id(UUID("93add34e-4928-4430-9381-b5f9eb137283"))
+        async def dependency(auth_repo: SQLAlchemyUserRepository = Depends(get_auth_repository)):
+            user = await auth_repo.find_by_id(UUID("93add34e-4928-4430-9381-b5f9eb137283"))
             return user
 
         return dependency

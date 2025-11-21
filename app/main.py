@@ -2,17 +2,14 @@ import logging
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.params import Depends
 from starlette.middleware.cors import CORSMiddleware
-from starlette.websockets import WebSocket
 
 from app.core.setting import settings
 from app.initialize.database import lifespan
 from app.initialize.websocket import socket_manage
-from app.modules.auth.security import TokenService
-from app.modules.user.controller import auth_router, user_router
-from app.modules.user.dependencies import get_token_service
+from app.modules.user.presentation.rest.api import auth_router, user_router
 
+from app.modules.user.presentation.websocket.endpoint import router as websocket_router
 
 class Application:
     def __init__(self):
@@ -21,33 +18,13 @@ class Application:
         self.setup_router()
         self.init_cors()
         self.configure_logging()
-        # self.setup_websocket_router()
 
     def setup_router(self):
         """Define application routes here."""
 
         self.app.include_router(auth_router, prefix="/api/user", tags=["user"])
         self.app.include_router(user_router, prefix="/api/user", tags=["user"])
-
-    def setup_websocket_router(self):
-        """Define WebSocket routes here."""
-
-        @self.app.websocket("/ws")
-        async def websocket_endpoint(websocket: WebSocket,
-                                     token_service: TokenService = Depends(get_token_service)):
-            access_token = websocket.cookies.get("access_token", None)
-            token_data = token_service.validate_token(access_token)
-            if not token_data:
-                await websocket.close()
-                return
-            user_id = token_data.get('sub', '')
-            await self.manager.connect(websocket, user_id)
-            try:
-                while True:
-                    await websocket.receive_json()
-            except Exception as e:
-                logging.info(f"WebSocket disconnected: {e}")
-                self.manager.disconnect(websocket)
+        self.app.include_router(websocket_router, tags=["websocket"])
 
     def init_cors(self):
         """Set up CORS middleware."""
